@@ -149,7 +149,8 @@ function App() {
                           getSelectedBankRates()[0].newRate,
                           formData.currentTerm
                         ),
-                        extraRepayment
+                        extraRepayment,
+                        formData.paymentFrequency
                       )
                     : null
                 }

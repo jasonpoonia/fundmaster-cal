@@ -8,7 +8,6 @@ type PreferenceSelectionProps = {
   onBack: () => void;
   extraRepayment?: number;
   onExtraRepaymentChange?: (value: number) => void;
-  getFrequencyLabel?: (frequency: string) => string;
   formatCurrency?: (value: number) => string;
   onNext?: () => void;
 };
@@ -19,15 +18,18 @@ export function PreferenceSelection({
   onBack,
   extraRepayment = 0,
   onExtraRepaymentChange,
-  getFrequencyLabel,
   formatCurrency,
   onNext,
 }: PreferenceSelectionProps) {
-  const handlePreferenceSelect = (preference: 'money' | 'time') => {
-    onPreferenceSelect(preference);
-    if (preference === 'money' && onNext) {
+  const handleMoneyPreference = () => {
+    onPreferenceSelect('money');
+    if (onNext) {
       onNext();
     }
+  };
+
+  const handleTimePreference = () => {
+    onPreferenceSelect('time');
   };
 
   return (
@@ -46,7 +48,7 @@ export function PreferenceSelection({
       <div className="flex gap-4">
         <button
           type="button"
-          onClick={() => handlePreferenceSelect('money')}
+          onClick={handleMoneyPreference}
           className={`flex-1 py-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
             formData.preference === 'money'
               ? 'bg-primary-500 text-white'
@@ -58,7 +60,7 @@ export function PreferenceSelection({
         </button>
         <button
           type="button"
-          onClick={() => handlePreferenceSelect('time')}
+          onClick={handleTimePreference}
           className={`flex-1 py-4 rounded-lg transition-colors flex items-center justify-center gap-2 ${
             formData.preference === 'time'
               ? 'bg-primary-500 text-white'
@@ -70,12 +72,12 @@ export function PreferenceSelection({
         </button>
       </div>
 
-      {formData.preference === 'time' && onExtraRepaymentChange && getFrequencyLabel && formatCurrency && (
+      {formData.preference === 'time' && onExtraRepaymentChange && formatCurrency && (
         <div className="mt-6 space-y-6">
           <div className="bg-primary-50 p-6 rounded-lg">
             <div className="space-y-2">
               <label htmlFor="extraRepayment" className="block text-sm font-medium text-gray-700">
-                Amount Above Minimum (Fortnightly) ($)
+                Extra Repayment Amount ($)
               </label>
               <input
                 type="text"

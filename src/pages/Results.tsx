@@ -67,6 +67,24 @@ export function Results({
     onPreferenceChange('time');
   };
 
+  // Recalculate results when display frequency changes
+  const handleFrequencyChange = (newFrequency: PaymentFrequency) => {
+    setDisplayFrequency(newFrequency);
+    
+    // If we're in "time" mode, we need to recalculate with the new frequency
+    if (formData.preference === 'time') {
+      // We keep the same extra repayment amount but the frequency changes
+      // This will affect the annual extra payment amount
+      const currentExtraRepayment = extraRepayment;
+      
+      // Force a recalculation by temporarily setting to 0 and then back
+      onExtraRepaymentChange(0);
+      setTimeout(() => {
+        onExtraRepaymentChange(currentExtraRepayment);
+      }, 0);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <ExtraRepaymentModal
@@ -74,8 +92,6 @@ export function Results({
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleExtraRepaymentSubmit}
         formatCurrency={formatCurrency}
-        getFrequencyLabel={getFrequencyLabel}
-        paymentFrequency={displayFrequency}
       />
 
       <div className="flex items-center justify-between">
@@ -90,7 +106,7 @@ export function Results({
         <div className="flex items-center gap-4">
           <FrequencySelector
             displayFrequency={displayFrequency}
-            onFrequencyChange={setDisplayFrequency}
+            onFrequencyChange={handleFrequencyChange}
           />
 
           <button
@@ -119,7 +135,7 @@ export function Results({
       <CurrentMortgageSummary
         formData={formData}
         baseMonthlyPayment={baseMonthlyPayment}
-        getPaymentDisplay={(amount) => getPaymentDisplay(amount, 'fortnightly')}
+        getPaymentDisplay={getPaymentDisplay}
         formatCurrency={formatCurrency}
       />
 
@@ -141,6 +157,8 @@ export function Results({
         displayFrequency={displayFrequency}
         getPaymentDisplay={getPaymentDisplay}
         formatCurrency={formatCurrency}
+        getFrequencyLabel={getFrequencyLabel}
+        convertFromMonthlyAmount={convertFromMonthlyAmount}
       />
 
       <ReportActions

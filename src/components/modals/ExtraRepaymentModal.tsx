@@ -6,8 +6,6 @@ type ExtraRepaymentModalProps = {
   onClose: () => void;
   onSubmit: (amount: number) => void;
   formatCurrency: (value: number) => string;
-  getFrequencyLabel: (frequency: string) => string;
-  paymentFrequency: string;
 };
 
 export function ExtraRepaymentModal({
@@ -15,8 +13,6 @@ export function ExtraRepaymentModal({
   onClose,
   onSubmit,
   formatCurrency,
-  getFrequencyLabel,
-  paymentFrequency,
 }: ExtraRepaymentModalProps) {
   const [amount, setAmount] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -41,7 +37,7 @@ export function ExtraRepaymentModal({
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Additional Fortnightly Payment
+            Extra Repayment Amount
           </h3>
           <button
             onClick={onClose}
@@ -54,7 +50,7 @@ export function ExtraRepaymentModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="extraAmount" className="block text-sm font-medium text-gray-700 mb-1">
-              How much extra would you like to pay each fortnight?
+              How much extra would you like to pay with each payment?
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -67,10 +63,11 @@ export function ExtraRepaymentModal({
                   setAmount(value);
                   setError('');
                 }}
-                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="0.00"
               />
             </div>
+            <p className="mt-1 text-sm text-gray-500">This amount will be added to your regular fortnightly payments</p>
             {error && (
               <p className="mt-1 text-sm text-red-600">{error}</p>
             )}
@@ -86,7 +83,7 @@ export function ExtraRepaymentModal({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 transition-colors"
             >
               Continue
             </button>

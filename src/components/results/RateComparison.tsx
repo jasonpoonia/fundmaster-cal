@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { FormData, PaymentFrequency } from '../../types';
+import { calculateAnnualSavings } from '../../utils/calculations';
 
 type RateComparisonProps = {
   formData: FormData;
@@ -9,6 +10,8 @@ type RateComparisonProps = {
   displayFrequency: PaymentFrequency;
   getPaymentDisplay: (monthlyAmount: number, frequency?: PaymentFrequency) => string;
   formatCurrency: (value: number) => string;
+  getFrequencyLabel: (frequency: string) => string;
+  convertFromMonthlyAmount: (amount: number, frequency: string) => number;
 };
 
 export function RateComparison({
@@ -19,6 +22,8 @@ export function RateComparison({
   displayFrequency,
   getPaymentDisplay,
   formatCurrency,
+  getFrequencyLabel,
+  convertFromMonthlyAmount,
 }: RateComparisonProps) {
   const bestOption = useMemo(() => {
     if (results.length === 0) return null;
@@ -42,23 +47,7 @@ export function RateComparison({
     return term;
   };
 
-  const calculateInterestSaved = (result: any) => {
-    const currentTotalInterest = formData.loanAmount * (formData.currentRate / 100) * formData.currentTerm;
-    const newTotalInterest = formData.loanAmount * (result.newRate / 100) * result.newTerm;
-    return currentTotalInterest - newTotalInterest;
-  };
-
-  // Convert fortnightly extra repayment to display frequency
-  const getExtraRepaymentForDisplay = () => {
-    switch (displayFrequency) {
-      case 'weekly':
-        return extraRepayment * (26/52); // Convert fortnightly to weekly
-      case 'monthly':
-        return extraRepayment * (26/12); // Convert fortnightly to monthly
-      default:
-        return extraRepayment; // Keep as fortnightly
-    }
-  };
+  const annualExtraPayments = calculateAnnualSavings(extraRepayment, displayFrequency);
 
   return (
     <div className="bg-primary-50 p-6 lg:p-8 rounded-lg">
@@ -88,13 +77,13 @@ export function RateComparison({
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">New Payment:</span>
                     <span className="font-semibold text-primary-600">
-                      {getPaymentDisplay(result.newPayment, displayFrequency)}
+                      {getPaymentDisplay(result.newPayment)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-gray-600">Payment Savings:</span>
                     <span className="font-semibold text-primary-600">
-                      {getPaymentDisplay(baseMonthlyPayment - result.newPayment, displayFrequency)}
+                      {getPaymentDisplay(baseMonthlyPayment - result.newPayment)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
@@ -110,17 +99,21 @@ export function RateComparison({
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Total Payment:</span>
                       <span className="font-semibold text-primary-600">
-                        {getPaymentDisplay(result.newPayment + extraRepayment, displayFrequency)}
+                        {getPaymentDisplay(result.newPayment + convertFromMonthlyAmount(extraRepayment, displayFrequency))}
                       </span>
                     </div>
                     <div className="pl-4 space-y-1">
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Minimum Payment:</span>
-                        <span>{getPaymentDisplay(result.newPayment, displayFrequency)}</span>
+                        <span>{getPaymentDisplay(result.newPayment)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Extra Repayment:</span>
-                        <span>${formatCurrency(getExtraRepaymentForDisplay())} {displayFrequency === 'weekly' ? 'Weekly' : displayFrequency === 'monthly' ? 'Monthly' : 'Fortnightly'}</span>
+                        <span>${formatCurrency(extraRepayment)} per {displayFrequency.toLowerCase()} payment</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm text-gray-500">
+                        <span>Annual Extra:</span>
+                        <span>${formatCurrency(annualExtraPayments)}</span>
                       </div>
                     </div>
                   </div>
@@ -134,7 +127,7 @@ export function RateComparison({
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Interest Saved:</span>
                       <span className="font-semibold text-primary-600">
-                        ${formatCurrency(calculateInterestSaved(result))}
+                        ${formatCurrency(result.totalSaved)}
                       </span>
                     </div>
                   </div>

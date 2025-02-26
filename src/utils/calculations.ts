@@ -25,12 +25,13 @@ export const calculateTotalInterest = (principal: number, monthlyPayment: number
   return (monthlyPayment * years * 12) - principal;
 };
 
+// Convert any payment amount to its monthly equivalent
 export const convertToMonthlyAmount = (amount: number, frequency: PaymentFrequency) => {
   switch (frequency) {
     case 'weekly':
-      return amount * 52 / 12;
+      return amount * 52 / 12; // 52 weeks per year / 12 months
     case 'fortnightly':
-      return amount * 26 / 12;
+      return amount * 26 / 12; // 26 fortnights per year / 12 months
     case 'monthly':
       return amount;
     default:
@@ -38,12 +39,13 @@ export const convertToMonthlyAmount = (amount: number, frequency: PaymentFrequen
   }
 };
 
+// Convert any monthly amount to the specified frequency
 export const convertFromMonthlyAmount = (monthlyAmount: number, frequency: PaymentFrequency) => {
   switch (frequency) {
     case 'weekly':
-      return monthlyAmount * 12 / 52;
+      return monthlyAmount * 12 / 52; // Convert monthly to weekly
     case 'fortnightly':
-      return monthlyAmount * 12 / 26;
+      return monthlyAmount * 12 / 26; // Convert monthly to fortnightly
     case 'monthly':
       return monthlyAmount;
     default:
@@ -51,16 +53,37 @@ export const convertFromMonthlyAmount = (monthlyAmount: number, frequency: Payme
   }
 };
 
-export const convertToFortnightly = (amount: number, fromFrequency: PaymentFrequency): number => {
-  // First convert to monthly, then to fortnightly
-  const monthlyAmount = convertToMonthlyAmount(amount, fromFrequency);
-  return convertFromMonthlyAmount(monthlyAmount, 'fortnightly');
+// Calculate total annual savings based on frequency and amount
+export const calculateAnnualSavings = (amount: number, frequency: PaymentFrequency) => {
+  switch (frequency) {
+    case 'weekly':
+      return amount * 52; // 52 weeks per year
+    case 'fortnightly':
+      return amount * 26; // 26 fortnights per year
+    case 'monthly':
+      return amount * 12; // 12 months per year
+    default:
+      return amount * 12;
+  }
 };
 
-export const convertFromFortnightly = (fortnightlyAmount: number, toFrequency: PaymentFrequency): number => {
-  // First convert to monthly, then to target frequency
-  const monthlyAmount = convertToMonthlyAmount(fortnightlyAmount, 'fortnightly');
-  return convertFromMonthlyAmount(monthlyAmount, toFrequency);
+// Calculate loan balance at any point in time
+export const calculateLoanBalance = (
+  principal: number,
+  annualRate: number,
+  monthlyPayment: number,
+  monthsPassed: number
+) => {
+  const monthlyRate = annualRate / 100 / 12;
+  let balance = principal;
+
+  for (let i = 0; i < monthsPassed; i++) {
+    const interestPayment = balance * monthlyRate;
+    const principalPayment = monthlyPayment - interestPayment;
+    balance = Math.max(0, balance - principalPayment);
+  }
+
+  return balance;
 };
 
 export const getFrequencyLabel = (frequency: PaymentFrequency) => {
