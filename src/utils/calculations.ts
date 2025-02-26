@@ -98,3 +98,60 @@ export const getFrequencyLabel = (frequency: PaymentFrequency) => {
       return '';
   }
 };
+
+// Calculate loan payoff with extra payments
+export const calculateLoanWithExtraPayments = (
+  principal: number,
+  annualRate: number,
+  regularMonthlyPayment: number,
+  extraPayment: number,
+  frequency: PaymentFrequency,
+  termYears: number
+) => {
+  const monthlyRate = annualRate / 100 / 12;
+  const totalMonths = termYears * 12;
+  
+  // Convert extra payment to monthly equivalent based on frequency
+  const monthlyExtraPayment = convertToMonthlyAmount(extraPayment, frequency);
+  
+  // Calculate total monthly payment
+  const totalMonthlyPayment = regularMonthlyPayment + monthlyExtraPayment;
+  
+  // Calculate original loan details (without extra payments)
+  let originalBalance = principal;
+  let originalTotalInterest = 0;
+  
+  for (let month = 0; month < totalMonths; month++) {
+    const monthlyInterest = originalBalance * monthlyRate;
+    originalTotalInterest += monthlyInterest;
+    const principalPayment = regularMonthlyPayment - monthlyInterest;
+    originalBalance = Math.max(0, originalBalance - principalPayment);
+  }
+  
+  // Calculate new loan details with extra payments
+  let newBalance = principal;
+  let newTotalInterest = 0;
+  let month = 0;
+  
+  while (newBalance > 0 && month < totalMonths) {
+    const monthlyInterest = newBalance * monthlyRate;
+    newTotalInterest += monthlyInterest;
+    const principalPayment = totalMonthlyPayment - monthlyInterest;
+    newBalance = Math.max(0, newBalance - principalPayment);
+    month++;
+  }
+  
+  // Calculate results
+  const newTermInYears = month / 12;
+  const yearsSaved = termYears - newTermInYears;
+  const interestSaved = originalTotalInterest - newTotalInterest;
+  const annualExtraPayment = calculateAnnualSavings(extraPayment, frequency);
+  
+  return {
+    newTerm: newTermInYears,
+    monthsSaved: totalMonths - month,
+    yearsSaved: yearsSaved,
+    totalSaved: interestSaved,
+    annualExtraPayment: annualExtraPayment
+  };
+};

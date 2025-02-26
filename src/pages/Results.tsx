@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, PiggyBank } from 'lucide-react';
 import { FormData, PaymentFrequency } from '../types';
 import { ExtraRepaymentModal } from '../components/modals/ExtraRepaymentModal';
@@ -7,6 +7,8 @@ import { CurrentMortgageSummary } from '../components/results/CurrentMortgageSum
 import { ExtraRepaymentInput } from '../components/results/ExtraRepaymentInput';
 import { RateComparison } from '../components/results/RateComparison';
 import { ReportActions } from '../components/results/ReportActions';
+import { MortgageBalanceChart } from '../components/results/MortgageBalanceChart';
+import { calculateLoanBalance } from '../utils/calculations';
 
 type ResultsProps = {
   formData: FormData;
@@ -23,6 +25,8 @@ type ResultsProps = {
   convertFromMonthlyAmount: (amount: number, frequency: string) => number;
   getComparisonData: () => any[];
   getBaseMonthlyPayment: () => number;
+  displayFrequency: PaymentFrequency;
+  onDisplayFrequencyChange: (frequency: PaymentFrequency) => void;
 };
 
 export function Results({
@@ -40,10 +44,59 @@ export function Results({
   convertFromMonthlyAmount,
   getComparisonData,
   getBaseMonthlyPayment,
+  displayFrequency,
+  onDisplayFrequencyChange
 }: ResultsProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [displayFrequency, setDisplayFrequency] = useState<PaymentFrequency>(formData.paymentFrequency);
+  const [mortgageBalanceData, setMortgageBalanceData] = useState<any[]>([]);
   const baseMonthlyPayment = getBaseMonthlyPayment();
+
+  // Generate mortgage balance data for chart
+  useEffect(() => {
+    if (results.length === 0 || !formData.currentTerm) return;
+
+    const years = Math.ceil(formData.currentTerm as number);
+    const data = [];
+
+    for (let year = 0; year <= years; year++) {
+      const dataPoint: any = { year };
+      
+      // Current rate balance
+      dataPoint.currentBalance = calculateLoanBalance(
+        formData.loanAmount,
+        formData.currentRate as number,
+        baseMonthlyPayment,
+        year * 12
+      );
+      
+      // Add balance for each term option
+      results.forEach(result => {
+        // For time preference with extra repayments, calculate with extra payments
+        if (formData.preference === 'time' && extraRepayment > 0) {
+          const monthlyExtraPayment = convertFromMonthlyAmount(extraRepayment, displayFrequency) * 
+            (displayFrequency === 'weekly' ? 4.33 : displayFrequency === 'fortnightly' ? 2.17 : 1);
+          
+          dataPoint[result.term] = calculateLoanBalance(
+            formData.loanAmount,
+            result.newRate,
+            result.newPayment + monthlyExtraPayment,
+            year * 12
+          );
+        } else {
+          dataPoint[result.term] = calculateLoanBalance(
+            formData.loanAmount,
+            result.newRate,
+            result.newPayment,
+            year * 12
+          );
+        }
+      });
+      
+      data.push(dataPoint);
+    }
+    
+    setMortgageBalanceData(data);
+  }, [formData, results, baseMonthlyPayment, extraRepayment, displayFrequency]);
 
   const getPaymentDisplay = (monthlyAmount: number, frequency: PaymentFrequency = displayFrequency) => {
     const frequencyAmount = convertFromMonthlyAmount(monthlyAmount, frequency);
@@ -67,22 +120,8 @@ export function Results({
     onPreferenceChange('time');
   };
 
-  // Recalculate results when display frequency changes
   const handleFrequencyChange = (newFrequency: PaymentFrequency) => {
-    setDisplayFrequency(newFrequency);
-    
-    // If we're in "time" mode, we need to recalculate with the new frequency
-    if (formData.preference === 'time') {
-      // We keep the same extra repayment amount but the frequency changes
-      // This will affect the annual extra payment amount
-      const currentExtraRepayment = extraRepayment;
-      
-      // Force a recalculation by temporarily setting to 0 and then back
-      onExtraRepaymentChange(0);
-      setTimeout(() => {
-        onExtraRepaymentChange(currentExtraRepayment);
-      }, 0);
-    }
+    onDisplayFrequencyChange(newFrequency);
   };
 
   return (
@@ -160,6 +199,14 @@ export function Results({
         getFrequencyLabel={getFrequencyLabel}
         convertFromMonthlyAmount={convertFromMonthlyAmount}
       />
+
+      {mortgageBalanceData.length > 0 && (
+        <MortgageBalanceChart
+          mortgageBalanceData={mortgageBalanceData}
+          results={results}
+          formatCurrency={formatCurrency}
+        />
+      )}
 
       <ReportActions
         formData={formData}

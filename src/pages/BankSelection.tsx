@@ -241,7 +241,7 @@ export function BankSelection({
       <div className="mt-8">
         <button
           onClick={onNext}
-          className="w-full lg:w-auto lg:px-8 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          className="w-full lg:w-auto lg:px-8 bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition-colors"
           disabled={
             formData.selectedBank === 'Custom Rate'
               ? formData.selectedTerms.length === 0 || formData.selectedTerms.some(term => !formData.customRates[term])

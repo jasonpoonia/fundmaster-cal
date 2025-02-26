@@ -5,7 +5,7 @@ import { SummaryItem } from './SummaryItem';
 type CurrentMortgageSummaryProps = {
   formData: FormData;
   baseMonthlyPayment: number;
-  getPaymentDisplay: (monthlyAmount: number) => string;
+  getPaymentDisplay: (monthlyAmount: number, frequency?: string) => string;
   formatCurrency: (value: number) => string;
 };
 
@@ -35,15 +35,15 @@ export function CurrentMortgageSummary({
         />
         <SummaryItem
           label="Minimum Repayment"
-          value={getPaymentDisplay(baseMonthlyPayment)}
+          value={getPaymentDisplay(baseMonthlyPayment, formData.paymentFrequency)}
         />
         <SummaryItem
           label="Extra Repayment"
-          value={`$${formatCurrency(formData.currentExtraRepayment)} Fortnightly`}
+          value={`$${formatCurrency(formData.currentExtraRepayment)} ${formData.paymentFrequency === 'fortnightly' ? 'Fortnightly' : formData.paymentFrequency === 'weekly' ? 'Weekly' : 'Monthly'}`}
         />
         <SummaryItem
           label="Total Repayment"
-          value={getPaymentDisplay(baseMonthlyPayment + formData.currentExtraRepayment)}
+          value={getPaymentDisplay(baseMonthlyPayment + formData.currentExtraRepayment, formData.paymentFrequency)}
         />
       </div>
     </div>

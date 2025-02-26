@@ -77,7 +77,7 @@ export function PersonalInfo({ formData, onInputChange, onNext, onBack }: Person
       </div>
       <button
         onClick={onNext}
-        className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
+        className="w-full bg-primary-600 text-white py-3 rounded-lg hover:bg-primary-700 transition-colors"
       >
         Next
       </button>

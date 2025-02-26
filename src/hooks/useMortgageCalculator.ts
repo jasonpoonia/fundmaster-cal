@@ -8,7 +8,8 @@ import {
   convertToMonthlyAmount,
   convertFromMonthlyAmount,
   calculateAnnualSavings,
-  calculateLoanBalance
+  calculateLoanBalance,
+  calculateLoanWithExtraPayments
 } from '../utils/calculations';
 
 export function useMortgageCalculator() {
@@ -121,71 +122,19 @@ export function useMortgageCalculator() {
     extraAmount: number,
     frequency: PaymentFrequency
   ) => {
-    const monthlyRate = rate / 100 / 12;
-    const totalMonths = (formData.currentTerm as number) * 12;
+    if (!formData.currentTerm) return null;
     
-    // Convert extra payment to its monthly equivalent based on frequency
-    let monthlyExtraPayment = 0;
-    
-    switch (frequency) {
-      case 'weekly':
-        // 52 weeks per year / 12 months = 4.33 weeks per month
-        monthlyExtraPayment = extraAmount * 4.33;
-        break;
-      case 'fortnightly':
-        // 26 fortnights per year / 12 months = 2.17 fortnights per month
-        monthlyExtraPayment = extraAmount * 2.17;
-        break;
-      case 'monthly':
-        monthlyExtraPayment = extraAmount;
-        break;
-    }
-    
-    // Calculate total monthly payment including extra
-    const totalMonthlyPayment = regularPayment + monthlyExtraPayment;
-
-    // Calculate original loan details (without extra payments)
-    let originalBalance = principal;
-    let originalTotalInterest = 0;
-    
-    for (let month = 0; month < totalMonths; month++) {
-      const monthlyInterest = originalBalance * monthlyRate;
-      originalTotalInterest += monthlyInterest;
-      const principalPayment = regularPayment - monthlyInterest;
-      originalBalance = Math.max(0, originalBalance - principalPayment);
-    }
-
-    // Calculate new loan details with extra payments
-    let newBalance = principal;
-    let newTotalInterest = 0;
-    let month = 0;
-
-    while (newBalance > 0 && month < totalMonths) {
-      const monthlyInterest = newBalance * monthlyRate;
-      newTotalInterest += monthlyInterest;
-      const totalPrincipalPayment = totalMonthlyPayment - monthlyInterest;
-      newBalance = Math.max(0, newBalance - totalPrincipalPayment);
-      month++;
-    }
-
-    // Calculate new term in years and total interest saved
-    const newTermInYears = month / 12;
-    const yearsSaved = (formData.currentTerm as number) - newTermInYears;
-    const interestSaved = originalTotalInterest - newTotalInterest;
-
-    // Calculate annual extra payment based on frequency for display
-    const annualExtraPayment = calculateAnnualSavings(extraAmount, frequency);
-
-    return {
-      newTerm: newTermInYears,
-      monthsSaved: totalMonths - month,
-      yearsSaved: yearsSaved,
-      totalSaved: interestSaved,
-      annualExtraPayment: annualExtraPayment
-    };
+    return calculateLoanWithExtraPayments(
+      principal,
+      rate,
+      regularPayment,
+      extraAmount,
+      frequency,
+      formData.currentTerm as number
+    );
   };
 
-  const getSelectedBankRates = () => {
+  const getSelectedBankRates = (currentFrequency: PaymentFrequency = formData.paymentFrequency) => {
     if (!formData.currentRate || !formData.currentTerm) return [];
     
     if (formData.selectedBank === 'Custom Rate') {
@@ -197,7 +146,7 @@ export function useMortgageCalculator() {
       
       if (formData.preference === 'money') {
         const currentPayment = baseMonthlyPayment + convertToMonthlyAmount(formData.currentExtraRepayment, formData.paymentFrequency);
-        const newPayment = newMonthlyPayment + convertToMonthlyAmount(extraRepayment, formData.paymentFrequency);
+        const newPayment = newMonthlyPayment + convertToMonthlyAmount(extraRepayment, currentFrequency);
 
         return [{
           term: 'Custom',
@@ -208,7 +157,7 @@ export function useMortgageCalculator() {
           monthlySavings: currentPayment - newPayment,
           totalSavings: calculateTotalInterest(formData.loanAmount, currentPayment, formData.currentTerm as number) - 
                        calculateTotalInterest(formData.loanAmount, newPayment, formData.currentTerm as number),
-          frequency: formData.paymentFrequency
+          frequency: currentFrequency
         }];
       } else {
         const extraRepaymentResults = calculateWithExtraRepayment(
@@ -216,7 +165,7 @@ export function useMortgageCalculator() {
           newRate,
           newMonthlyPayment,
           extraRepayment,
-          formData.paymentFrequency
+          currentFrequency
         );
 
         return [{
@@ -224,12 +173,12 @@ export function useMortgageCalculator() {
           currentRate: formData.currentRate,
           newRate,
           currentTerm: formData.currentTerm,
-          newTerm: extraRepaymentResults.newTerm,
-          yearsSaved: extraRepaymentResults.yearsSaved,
-          monthsSaved: extraRepaymentResults.monthsSaved,
+          newTerm: extraRepaymentResults?.newTerm || formData.currentTerm,
+          yearsSaved: extraRepaymentResults?.yearsSaved || 0,
+          monthsSaved: extraRepaymentResults?.monthsSaved || 0,
           newPayment: newMonthlyPayment,
-          totalSaved: extraRepaymentResults.totalSaved,
-          annualExtraPayment: extraRepaymentResults.annualExtraPayment
+          totalSaved: extraRepaymentResults?.totalSaved || 0,
+          annualExtraPayment: extraRepaymentResults?.annualExtraPayment || 0
         }];
       }
     }
@@ -247,7 +196,7 @@ export function useMortgageCalculator() {
       
       if (formData.preference === 'money') {
         const currentPayment = baseMonthlyPayment + convertToMonthlyAmount(formData.currentExtraRepayment, formData.paymentFrequency);
-        const newPayment = newMonthlyPayment + convertToMonthlyAmount(extraRepayment, formData.paymentFrequency);
+        const newPayment = newMonthlyPayment + convertToMonthlyAmount(extraRepayment, currentFrequency);
 
         return {
           term,
@@ -258,7 +207,7 @@ export function useMortgageCalculator() {
           monthlySavings: currentPayment - newPayment,
           totalSavings: calculateTotalInterest(formData.loanAmount, currentPayment, formData.currentTerm as number) - 
                        calculateTotalInterest(formData.loanAmount, newPayment, formData.currentTerm as number),
-          frequency: formData.paymentFrequency
+          frequency: currentFrequency
         };
       } else {
         const extraRepaymentResults = calculateWithExtraRepayment(
@@ -266,7 +215,7 @@ export function useMortgageCalculator() {
           newRate,
           newMonthlyPayment,
           extraRepayment,
-          formData.paymentFrequency
+          currentFrequency
         );
 
         return {
@@ -274,19 +223,19 @@ export function useMortgageCalculator() {
           currentRate: formData.currentRate,
           newRate,
           currentTerm: formData.currentTerm,
-          newTerm: extraRepaymentResults.newTerm,
-          yearsSaved: extraRepaymentResults.yearsSaved,
-          monthsSaved: extraRepaymentResults.monthsSaved,
+          newTerm: extraRepaymentResults?.newTerm || formData.currentTerm,
+          yearsSaved: extraRepaymentResults?.yearsSaved || 0,
+          monthsSaved: extraRepaymentResults?.monthsSaved || 0,
           newPayment: newMonthlyPayment,
-          totalSaved: extraRepaymentResults.totalSaved,
-          annualExtraPayment: extraRepaymentResults.annualExtraPayment
+          totalSaved: extraRepaymentResults?.totalSaved || 0,
+          annualExtraPayment: extraRepaymentResults?.annualExtraPayment || 0
         };
       }
     });
   };
 
-  const getComparisonData = () => {
-    const results = getSelectedBankRates();
+  const getComparisonData = (currentFrequency: PaymentFrequency = formData.paymentFrequency) => {
+    const results = getSelectedBankRates(currentFrequency);
     if (results.length === 0) return [];
 
     if (formData.preference === 'money') {

@@ -42,8 +42,8 @@ export function RateComparison({
   const getTermDisplay = (term: string) => {
     if (term === 'Custom') return 'Custom Rate';
     if (term === 'floating') return 'Floating';
-    if (term.endsWith('y')) return `${term.replace('y', ' Year')}`;
-    if (term.endsWith('m')) return `${term.replace('m', ' Month')}`;
+    if (term.endsWith('y')) return `${term.replace('y', ' Year(s)')}`;
+    if (term.endsWith('m')) return `${term.replace('m', ' Month(s)')}`;
     return term;
   };
 
@@ -75,7 +75,7 @@ export function RateComparison({
               {formData.preference === 'money' ? (
                 <>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">New Payment:</span>
+                    <span className="text-gray-600">Minimum Payment:</span>
                     <span className="font-semibold text-primary-600">
                       {getPaymentDisplay(result.newPayment)}
                     </span>
@@ -125,7 +125,7 @@ export function RateComparison({
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Interest Saved:</span>
+                      <span className="text-gray-600">Interest Saved Across Term:</span>
                       <span className="font-semibold text-primary-600">
                         ${formatCurrency(result.totalSaved)}
                       </span>

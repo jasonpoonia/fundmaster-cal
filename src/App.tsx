@@ -9,9 +9,11 @@ import { useMortgageCalculator } from './hooks/useMortgageCalculator';
 import { calculateMonthlyPayment } from './utils/calculations';
 import { banks } from './data/banks';
 import { formatCurrency, getFrequencyLabel, convertFromMonthlyAmount } from './utils/calculations';
+import { PaymentFrequency } from './types';
 
 function App() {
   const [step, setStep] = useState(1);
+  const [displayFrequency, setDisplayFrequency] = useState<PaymentFrequency>('fortnightly');
   const {
     formData,
     extraRepayment,
@@ -44,11 +46,6 @@ function App() {
         alert('Please select a bank and at least one term');
         return;
       }
-    } else if (step === 3) {
-      if (!formData.preference) {
-        alert('Please select your preference');
-        return;
-      }
     } else if (step === 4) {
       if (!formData.name || !formData.email || !formData.phone) {
         alert('Please fill in all personal information fields');
@@ -66,8 +63,17 @@ function App() {
     setStep(prev => prev - 1);
   };
 
-  const handlePreferenceChange = (newPreference: 'money' | 'time') => {
-    setFormData(prev => ({ ...prev, preference: newPreference }));
+  const handlePreferenceChange = (newPreference: 'money' | 'time', callback?: () => void) => {
+    setFormData(prev => {
+      const updatedData = { ...prev, preference: newPreference };
+      // Call the callback after state update is complete
+      if (callback) setTimeout(callback, 0);
+      return updatedData;
+    });
+  };
+
+  const handleDisplayFrequencyChange = (newFrequency: PaymentFrequency) => {
+    setDisplayFrequency(newFrequency);
   };
 
   return (
@@ -136,21 +142,21 @@ function App() {
             {step === 5 && (
               <Results
                 formData={formData}
-                results={getSelectedBankRates()}
+                results={getSelectedBankRates(displayFrequency)}
                 showExtraRepayment={showExtraRepayment}
                 extraRepayment={extraRepayment}
                 extraRepaymentResults={
                   extraRepayment > 0
                     ? calculateWithExtraRepayment(
                         formData.loanAmount,
-                        getSelectedBankRates()[0].newRate,
+                        getSelectedBankRates(displayFrequency)[0].newRate,
                         calculateMonthlyPayment(
                           formData.loanAmount,
-                          getSelectedBankRates()[0].newRate,
+                          getSelectedBankRates(displayFrequency)[0].newRate,
                           formData.currentTerm
                         ),
                         extraRepayment,
-                        formData.paymentFrequency
+                        displayFrequency
                       )
                     : null
                 }
@@ -161,8 +167,10 @@ function App() {
                 formatCurrency={formatCurrency}
                 getFrequencyLabel={getFrequencyLabel}
                 convertFromMonthlyAmount={convertFromMonthlyAmount}
-                getComparisonData={getComparisonData}
+                getComparisonData={() => getComparisonData(displayFrequency)}
                 getBaseMonthlyPayment={getBaseMonthlyPayment}
+                displayFrequency={displayFrequency}
+                onDisplayFrequencyChange={handleDisplayFrequencyChange}
               />
             )}
           </div>

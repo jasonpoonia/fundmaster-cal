@@ -50,7 +50,7 @@ export function ExtraRepaymentModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="extraAmount" className="block text-sm font-medium text-gray-700 mb-1">
-              How much extra would you like to pay each fortnight?
+              How much extra would you like to pay?
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">$</span>
