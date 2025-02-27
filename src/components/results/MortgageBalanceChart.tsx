@@ -21,6 +21,7 @@ export function MortgageBalanceChart({
   results,
   formatCurrency,
 }: MortgageBalanceChartProps) {
+  // Define consistent colors for each term
   const colors = {
     current: '#94a3b8',
     '6m': '#ef4444',
@@ -31,8 +32,11 @@ export function MortgageBalanceChart({
     '4y': '#3b82f6',
     '5y': '#8b5cf6',
     'floating': '#ec4899',
-    'custom': '#8b5cf6'
+    'Custom': '#8b5cf6'
   };
+
+  // Define the order of terms for display
+  const termOrder = ['6m', '1y', '18m', '2y', '3y', '4y', '5y', 'floating', 'Custom'];
 
   const getTermDisplay = (term: string) => {
     if (term === 'Custom') return 'Custom Rate';
@@ -41,6 +45,13 @@ export function MortgageBalanceChart({
     if (term.endsWith('m')) return `${term.replace('m', ' Month')}`;
     return term;
   };
+
+  // Sort results according to the predefined order
+  const sortedResults = [...results].sort((a, b) => {
+    const indexA = termOrder.indexOf(a.term);
+    const indexB = termOrder.indexOf(b.term);
+    return indexA - indexB;
+  });
 
   return (
     <div className="bg-white p-6 lg:p-8 rounded-lg shadow-sm">
@@ -88,13 +99,13 @@ export function MortgageBalanceChart({
               stroke={colors.current}
               strokeWidth={2}
             />
-            {results.map((result) => (
+            {sortedResults.map((result) => (
               <Line
                 key={result.term}
                 type="monotone"
                 dataKey={result.term}
                 name={getTermDisplay(result.term)}
-                stroke={colors[result.term] || colors.custom}
+                stroke={colors[result.term] || colors.Custom}
                 strokeWidth={2}
               />
             ))}

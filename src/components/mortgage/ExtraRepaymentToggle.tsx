@@ -35,7 +35,7 @@ export function ExtraRepaymentToggle({
       {checked && (
         <div className="mt-4">
           <label htmlFor="currentExtraRepayment" className="block text-sm font-medium text-gray-700">
-            Additional Amount Above Minimum (Fortnightly) ($)
+            Additional {getFrequencyLabel(paymentFrequency)} Repayment 
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>

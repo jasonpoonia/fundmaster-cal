@@ -17,10 +17,10 @@ export function ExtraRepaymentInput({
 }: ExtraRepaymentInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [cursorPosition, setCursorPosition] = useState<{ digitsBeforeCursor: number, selectionStart: number } | null>(null);
-
-  // Format number with commas
+  
+  // Format number with commas, but return empty string for zero
   const formatNumber = (num: number): string => {
-    if (!num && num !== 0) return '';
+    if (!num) return ''; // Return empty string for 0, null, undefined
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
   
@@ -28,13 +28,13 @@ export function ExtraRepaymentInput({
   const parseNumber = (str: string): string => {
     return str.replace(/[^\d.]/g, '');
   };
-
+  
   const handleExtraRepaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     const { selectionStart } = input;
     
     // Count commas before cursor in the previous value
-    const previousValue = extraRepayment ? extraRepayment.toString() : '0';
+    const previousValue = extraRepayment ? extraRepayment.toString() : '';
     const previousCommasBeforeCursor = (previousValue.substring(0, selectionStart || 0).match(/,/g) || []).length;
     
     // Remove all non-numeric characters for storing the raw value
@@ -53,7 +53,7 @@ export function ExtraRepaymentInput({
       selectionStart: selectionStart || 0
     });
   };
-
+  
   // Set cursor position after the input value has been updated
   useEffect(() => {
     if (inputRef.current && cursorPosition) {
@@ -77,7 +77,7 @@ export function ExtraRepaymentInput({
       inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
     }
   }, [extraRepayment, cursorPosition]);
-
+  
   return (
     <div className="bg-primary-50 p-6 lg:p-8 rounded-lg">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">

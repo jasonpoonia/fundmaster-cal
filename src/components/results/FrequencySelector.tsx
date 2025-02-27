@@ -19,7 +19,7 @@ export function FrequencySelector({
         id="displayFrequency"
         value={displayFrequency}
         onChange={(e) => onFrequencyChange(e.target.value as PaymentFrequency)}
-        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
       >
         <option value="weekly">Weekly</option>
         <option value="fortnightly">Fortnightly</option>

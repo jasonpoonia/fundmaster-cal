@@ -141,30 +141,6 @@ export function Results({
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
         </button>
-
-        <div className="flex items-center gap-4">
-          <FrequencySelector
-            displayFrequency={displayFrequency}
-            onFrequencyChange={handleFrequencyChange}
-          />
-
-          <button
-            onClick={handlePreferenceSwitch}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
-          >
-            {formData.preference === 'money' ? (
-              <>
-                <Clock className="w-4 h-4" />
-                <span>Switch to Save Term/Interest</span>
-              </>
-            ) : (
-              <>
-                <PiggyBank className="w-4 h-4" />
-                <span>Switch to Lower Minimum Repayment</span>
-              </>
-            )}
-          </button>
-        </div>
       </div>
 
       <h2 className="text-2xl lg:text-3xl font-semibold text-gray-700">
@@ -177,6 +153,30 @@ export function Results({
         getPaymentDisplay={getPaymentDisplay}
         formatCurrency={formatCurrency}
       />
+
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg">
+        <FrequencySelector
+          displayFrequency={displayFrequency}
+          onFrequencyChange={handleFrequencyChange}
+        />
+
+        <button
+          onClick={handlePreferenceSwitch}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-100 text-primary-700 hover:bg-primary-200 transition-colors"
+        >
+          {formData.preference === 'money' ? (
+            <>
+              <Clock className="w-4 h-4" />
+              <span>Switch to Save Term/Interest</span>
+            </>
+          ) : (
+            <>
+              <PiggyBank className="w-4 h-4" />
+              <span>Switch to Lower Minimum Repayment</span>
+            </>
+          )}
+        </button>
+      </div>
 
       {formData.preference === 'time' && (
         <ExtraRepaymentInput
@@ -216,6 +216,7 @@ export function Results({
         formatCurrency={formatCurrency}
         getFrequencyLabel={getFrequencyLabel}
         convertFromMonthlyAmount={convertFromMonthlyAmount}
+        displayFrequency={displayFrequency}
       />
     </div>
   );

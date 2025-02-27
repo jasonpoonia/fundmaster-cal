@@ -134,6 +134,9 @@ export function useMortgageCalculator() {
     );
   };
 
+  // Define the order of terms for display
+  const termOrder = ['6m', '1y', '18m', '2y', '3y', '4y', '5y', 'floating'];
+
   const getSelectedBankRates = (currentFrequency: PaymentFrequency = formData.paymentFrequency) => {
     if (!formData.currentRate || !formData.currentTerm) return [];
     
@@ -146,7 +149,7 @@ export function useMortgageCalculator() {
       
       if (formData.preference === 'money') {
         const currentPayment = baseMonthlyPayment + convertToMonthlyAmount(formData.currentExtraRepayment, formData.paymentFrequency);
-        const newPayment = newMonthlyPayment + convertToMonthlyAmount(extraRepayment, currentFrequency);
+        const newPayment = newMonthlyPayment;
 
         return [{
           term: 'Custom',
@@ -186,7 +189,14 @@ export function useMortgageCalculator() {
     const bank = banks.find(b => b.name === formData.selectedBank);
     if (!bank) return [];
 
-    return formData.selectedTerms.map(term => {
+    // Sort terms according to the predefined order
+    let sortedTerms = [...formData.selectedTerms].sort((a, b) => {
+      const indexA = termOrder.indexOf(a);
+      const indexB = termOrder.indexOf(b);
+      return indexA - indexB;
+    });
+
+    return sortedTerms.map(term => {
       const defaultRate = bank.rates[term];
       const newRate = formData.customRates[term] !== undefined ? formData.customRates[term] : defaultRate;
       const baseMonthlyPayment = getBaseMonthlyPayment();
@@ -196,7 +206,7 @@ export function useMortgageCalculator() {
       
       if (formData.preference === 'money') {
         const currentPayment = baseMonthlyPayment + convertToMonthlyAmount(formData.currentExtraRepayment, formData.paymentFrequency);
-        const newPayment = newMonthlyPayment + convertToMonthlyAmount(extraRepayment, currentFrequency);
+        const newPayment = newMonthlyPayment;
 
         return {
           term,

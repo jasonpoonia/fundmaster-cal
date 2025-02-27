@@ -79,7 +79,16 @@ export const banks: Bank[] = [
     }
   },
   {
-    name: 'Custom Rate',
-    rates: {}
+    name: 'Other',
+    rates: {
+      '6m': 6.49,
+      '1y': 5.89,
+      '18m': 5.79,
+      '2y': 5.59,
+      '3y': 5.99,
+      '4y': 5.99,
+      '5y': 5.99,
+      'floating': 6.99
+    }
   }
 ];

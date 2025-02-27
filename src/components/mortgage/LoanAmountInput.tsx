@@ -9,9 +9,9 @@ export function LoanAmountInput({ value, onChange }: LoanAmountInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [cursorPosition, setCursorPosition] = useState<{ digitsBeforeCursor: number, selectionStart: number } | null>(null);
   
-  // Format number with commas
+  // Format number with commas, but return empty string for zero
   const formatNumber = (num: number): string => {
-    if (!num && num !== 0) return '';
+    if (!num) return ''; // Return empty string for 0, null, undefined
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
   
@@ -25,7 +25,7 @@ export function LoanAmountInput({ value, onChange }: LoanAmountInputProps) {
     const { selectionStart } = input;
     
     // Count commas before cursor in the previous value
-    const previousValue = value.toString();
+    const previousValue = value ? value.toString() : '';
     const previousCommasBeforeCursor = (previousValue.substring(0, selectionStart || 0).match(/,/g) || []).length;
     
     // Remove all non-numeric characters for storing the raw value

@@ -179,7 +179,6 @@ export function PreferenceSelection({
                   value={formatNumber(extraRepayment)}
                   onChange={handleExtraRepaymentChange}
                   className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="0"
                 />
               </div>
               <p className="text-sm text-gray-500 mt-1">
