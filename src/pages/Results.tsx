@@ -100,7 +100,7 @@ export function Results({
 
   const getPaymentDisplay = (monthlyAmount: number, frequency: PaymentFrequency = displayFrequency) => {
     const frequencyAmount = convertFromMonthlyAmount(monthlyAmount, frequency);
-    return `$${formatCurrency(frequencyAmount)} ${getFrequencyLabel(frequency)}`;
+    return `$${formatCurrency(frequencyAmount)}`;
   };
 
   const handlePreferenceSwitch = () => {

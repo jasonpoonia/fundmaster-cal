@@ -37,7 +37,7 @@ export function ExtraRepaymentModal({
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">
-            Additional Fortnightly Payment
+            Additional Fortnightly Repayment
           </h3>
           <button
             onClick={onClose}

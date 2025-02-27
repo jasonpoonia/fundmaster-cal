@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { FormData, PaymentFrequency } from '../../types';
-import { calculateAnnualSavings } from '../../utils/calculations';
+import { calculateAnnualSavings, calculateTotalSavingsFromPerPayment } from '../../utils/calculations';
 
 type RateComparisonProps = {
   formData: FormData;
@@ -60,90 +60,104 @@ export function RateComparison({
     const indexB = termOrder.indexOf(b.term);
     return indexA - indexB;
   });
+  
   const getMortgageTypeDisplay = (type: string) => {
     return type === 'principal-and-interest' ? 'Principal and Interest' : 'Interest Only';
   };
+  
+  // Get the frequency label without making it lowercase
+  const frequencyLabel = getFrequencyLabel(displayFrequency);
+  
   return (
     <div className="bg-primary-50 p-6 lg:p-8 rounded-lg">
       <h3 className="text-lg lg:text-xl font-semibold text-gray-800 mb-6">
         {formData.selectedBank} - Rate Comparison ({getMortgageTypeDisplay(formData.mortgageType)})
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {sortedResults.map((result, index) => (
-          <div 
-            key={index} 
-            className="bg-white p-6 rounded-lg shadow-sm transition-all duration-300 h-full"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="font-medium text-gray-700">
-                {getTermDisplay(result.term)}
-              </h4>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">New Rate:</span>
-                <span className="font-semibold text-primary-600">{result.newRate}%</span>
+      
+      <div className="text-sm text-gray-600 mb-4">
+        All repayment amounts shown are {frequencyLabel.toLowerCase()}
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {sortedResults.map((result, index) => {
+          // For money preference, calculate total savings from per-payment savings for consistency
+          const displayedSavingsAmount = convertFromMonthlyAmount(result.monthlySavings, displayFrequency);
+          const displayedTotalSavings = formData.preference === 'money' 
+            ? calculateTotalSavingsFromPerPayment(displayedSavingsAmount, displayFrequency, formData.currentTerm as number)
+            : result.totalSavings;
+          
+          return (
+            <div 
+              key={index} 
+              className="bg-white p-6 rounded-lg shadow-sm transition-all duration-300 h-full"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-medium text-gray-700">
+                  {getTermDisplay(result.term)} @ {result.newRate}%
+                </h4>
               </div>
-              {formData.preference === 'money' ? (
-                <>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Minimum Repayment:</span>
-                    <span className="font-semibold text-primary-600">
-                      {getPaymentDisplay(result.newPayment)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payment Savings:</span>
-                    <span className="font-semibold text-primary-600">
-                      {getPaymentDisplay(baseMonthlyPayment - result.newPayment)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Total Savings Across Term:</span>
-                    <span className="font-semibold text-primary-600">
-                      ${formatCurrency(result.totalSavings)}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="space-y-2">
+              <div className="space-y-3">
+                {formData.preference === 'money' ? (
+                  <>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Repayment:</span>
+                      <span className="text-gray-600">Minimum Repayment:</span>
                       <span className="font-semibold text-primary-600">
-                        ${formatCurrency(convertFromMonthlyAmount(result.newPayment, displayFrequency) + extraRepayment)} {getFrequencyLabel(displayFrequency)}
-                    </span>
-                    </div>
-                    <div className="pl-4 space-y-1">
-                      <div className="flex justify-between items-center text-sm text-gray-500">
-                        <span>Minimum Repayment:</span>
-                        <span>{getPaymentDisplay(result.newPayment)}</span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm text-gray-500">
-                        <span>Extra Repayment:</span>
-                        <span>${formatCurrency(extraRepayment)} per {displayFrequency.toLowerCase()} payment</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="pt-2 space-y-2 border-t border-gray-100">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Years Saved:</span>
-                      <span className="font-semibold text-primary-600">
-                        {Math.round(result.yearsSaved * 10) / 10} years
+                        {getPaymentDisplay(result.newPayment)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Interest Saved Across Term:</span>
+                      <span className="text-gray-600">Repayment Savings:</span>
                       <span className="font-semibold text-primary-600">
-                        ${formatCurrency(result.totalSaved)}
+                        {getPaymentDisplay(result.monthlySavings)}
                       </span>
                     </div>
-                  </div>
-                </>
-              )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Total Savings Across Term:</span>
+                      <span className="font-semibold text-primary-600">
+                        ${formatCurrency(displayedTotalSavings)}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Total Repayment:</span>
+                        <span className="font-semibold text-primary-600">
+                          ${formatCurrency(convertFromMonthlyAmount(result.newPayment, displayFrequency) + extraRepayment)}
+                        </span>
+                      </div>
+                      <div className="pl-4 space-y-1">
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>Minimum Repayment:</span>
+                          <span>{getPaymentDisplay(result.newPayment)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>Extra Repayment:</span>
+                          <span>${formatCurrency(extraRepayment)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="pt-2 space-y-2 border-t border-gray-100">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Years Saved:</span>
+                        <span className="font-semibold text-primary-600">
+                          {Math.round(result.yearsSaved * 10) / 10} years
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Interest Saved Across Term:</span>
+                        <span className="font-semibold text-primary-600">
+                          ${formatCurrency(result.totalSaved)}
+                        </span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

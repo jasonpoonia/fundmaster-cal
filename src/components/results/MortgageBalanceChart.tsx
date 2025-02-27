@@ -64,8 +64,8 @@ export function MortgageBalanceChart({
             data={mortgageBalanceData}
             margin={{
               top: 20,
-              right: 30,
-              left: 20,
+              right: 45,
+              left: 45,
               bottom: 5,
             }}
           >
@@ -80,10 +80,10 @@ export function MortgageBalanceChart({
             />
             <YAxis
               label={{
-                value: 'Mortgage Balance ($)',
+                value: '',
                 angle: -90,
                 position: 'insideLeft',
-                offset: 10,
+                offset: 0,
               }}
               tickFormatter={(value) => `$${formatCurrency(value)}`}
             />

@@ -77,8 +77,8 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8 lg:py-12">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="container mx-auto px-4 py-8 lg:py-12 flex-grow">
         <div className="w-full bg-white rounded-xl shadow-lg p-6 lg:p-12">
           <div className="mb-8 lg:mb-12">
             <div className="flex items-center justify-center mb-4">
@@ -174,6 +174,21 @@ function App() {
               />
             )}
           </div>
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <div className="py-3 text-center text-gray-500 text-sm bg-white border-t border-gray-200 mt-auto">
+        <div className="container mx-auto">
+          Developed by{' '}
+          <a 
+            href="https://lucidmedia.co.nz/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary-600 hover:text-primary-800 transition-colors"
+          >
+            Lucid Media
+          </a>
         </div>
       </div>
     </div>

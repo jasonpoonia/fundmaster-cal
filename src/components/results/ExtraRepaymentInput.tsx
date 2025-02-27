@@ -77,15 +77,23 @@ export function ExtraRepaymentInput({
       inputRef.current.setSelectionRange(newCursorPosition, newCursorPosition);
     }
   }, [extraRepayment, cursorPosition]);
+
+  // Get frequency label
+  const frequencyLabel = getFrequencyLabel(paymentFrequency);
   
   return (
     <div className="bg-primary-50 p-6 lg:p-8 rounded-lg">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Additional Payment Settings
+      <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        Additional Repayment Settings
       </h3>
+      
+      <div className="text-sm text-gray-600 mb-4">
+        This amount will be added to each {paymentFrequency.toLowerCase()} payment
+      </div>
+      
       <div className="space-y-2">
         <label htmlFor="extraRepayment" className="block text-sm font-medium text-gray-700">
-          Extra Amount Per {getFrequencyLabel(paymentFrequency)} Payment ($)
+          Extra Amount Per Repayment ($)
         </label>
         <div className="relative">
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
@@ -99,9 +107,6 @@ export function ExtraRepaymentInput({
             placeholder="0"
           />
         </div>
-        <p className="text-sm text-gray-500">
-          This amount will be added to each {paymentFrequency.toLowerCase()} payment
-        </p>
       </div>
     </div>
   );
