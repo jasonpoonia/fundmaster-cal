@@ -665,7 +665,7 @@ export const generatePDFReport = (
     
     // Contact details
     doc.text('Phone: 0800 FUNDMASTER (0800 386 362)', 30, yPos + 35);
-    doc.text('Email: info@fundmaster.co.nz', 30, yPos + 45);
+    doc.text('Email: admin@fundmaster.co.nz', 30, yPos + 45);
     doc.text('Website: www.fundmaster.co.nz', 30, yPos + 55);
     
     // Footer disclaimer
